@@ -5,35 +5,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Downloads the missing figma_squircle folder
 
-      # Alchemy's Gradle/Android setup requires Java 17
-      - uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Setup Flutter - Using 'stable' as it is the most compatible with their dependencies
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: actions/setup-flutter@v3
         with:
           channel: 'stable'
-          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      # CRITICAL: Alchemy uses Hive and other generators mentioned in HOWTO.md
-      # This generates the .g.dart files. Without this, the build WILL fail.
       - name: Run Code Generation
+        # Required for Hive and other Alchemy dependencies
         run: dart run build_runner build --delete-conflicting-outputs
 
-      # Build the APK. 
-      # Note: If you want a smaller file, use 'flutter build apk --split-per-abi'
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Alchemy-Release
+          name: Alchemy-Final-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          
