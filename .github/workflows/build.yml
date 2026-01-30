@@ -8,11 +8,22 @@ jobs:
       - name: Checkout Alchemy
         uses: actions/checkout@v4
 
-      # This step fixes the "path doesn't exist" errors by fetching the missing folders
-      - name: Clone Missing Dependencies
+      # THE GLOBAL FIX: Overriding local paths with public Git repositories
+      - name: Create Dependency Overrides
         run: |
-          git clone https://github.com/aloisdeniel/figma_squircle figma_squircle
-          git clone https://github.com/Scintillam/liquid_progress_indicator_v2 liquid_progress_indicator_v2
+          cat >> pubspec.yaml <<EOF
+
+dependency_overrides:
+  figma_squircle:
+    git:
+      url: https://github.com/aloisdeniel/figma_squircle.git
+  liquid_progress_indicator_v2:
+    git:
+      url: https://github.com/Scintillam/liquid_progress_indicator_v2.git
+  scrobblenaut:
+    git:
+      url: https://github.com/KRTirtho/scrobblenaut.git
+EOF
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -30,7 +41,6 @@ jobs:
         run: flutter pub get
 
       - name: Run Code Generation
-        # This is the 'Hive' database step from the HOWTO.md
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK
@@ -39,6 +49,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Alchemy-Build
+          name: Alchemy-Final
           path: build/app/outputs/flutter-apk/app-release.apk
           
