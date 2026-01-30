@@ -8,24 +8,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: recursive # Downloads the missing figma_squircle folder
+          submodules: recursive # Fixes the figma_squircle error
 
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '17' # Required for modern Android builds
 
       - name: Setup Flutter
-        uses: actions/setup-flutter@v3
+        # This is the correct action name
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Run Code Generation
-        # Required for Hive and other Alchemy dependencies
+        # This handles the Hive/database parts mentioned in HOWTO.md
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK
@@ -34,6 +36,8 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
+          name: Alchemy-App
+          path: build/app/outputs/flutter-apk/app-release.apk
           name: Alchemy-Final-APK
           path: build/app/outputs/flutter-apk/app-release.apk
           
